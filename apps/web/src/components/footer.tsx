@@ -46,7 +46,7 @@ export default function Footer() {
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Product</p>
               {FOOTER_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="block">
+                <Link key={link.href} href={link.href as any} className="block">
                   {link.label}
                 </Link>
               ))}
@@ -54,7 +54,7 @@ export default function Footer() {
             <div className="space-y-2">
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Company</p>
               {SECONDARY_LINKS.map((link) => (
-                <Link key={link.href} href={link.href} className="block">
+                <Link key={link.href} href={link.href as any} className="block">
                   {link.label}
                 </Link>
               ))}

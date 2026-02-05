@@ -83,7 +83,7 @@ export default function ResourcesPage() {
               <div key={highlight.title} className="space-y-2">
                 <p className="text-sm font-medium text-foreground">{highlight.title}</p>
                 <p className="text-sm text-muted-foreground">{highlight.description}</p>
-                <Link className={buttonVariants({ variant: "link" })} href={highlight.link}>
+                <Link className={buttonVariants({ variant: "link" })} href={highlight.link as any}>
                   Read more
                 </Link>
               </div>

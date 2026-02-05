@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { useAppDispatch, useAppSelector } from "@/lib/store-hooks";
+import { FOCUS_AREAS, setFocusArea } from "@/lib/ui-slice";
 import { trpc } from "@/utils/trpc";
 
 const FEATURES = [
@@ -71,6 +73,12 @@ const METRICS = [
   },
 ];
 
+const FOCUS_COPY: Record<string, string> = {
+  Search: "Semantic search that understands intent, not just keywords.",
+  Governance: "Permission-aware answers with audit-ready provenance.",
+  Analytics: "Measure adoption, surface gaps, and guide teams forward.",
+};
+
 export default function Home() {
   const healthCheck = useQuery(trpc.healthCheck.queryOptions());
   const status = healthCheck.isLoading
@@ -78,6 +86,9 @@ export default function Home() {
     : healthCheck.data
       ? { label: "API Online", className: "bg-emerald-500" }
       : { label: "API Offline", className: "bg-rose-500" };
+
+  const dispatch = useAppDispatch();
+  const focusArea = useAppSelector((state) => state.ui.focusArea);
 
   return (
     <div className="bg-background text-foreground">
@@ -136,7 +147,7 @@ export default function Home() {
           </div>
           <div className="grid gap-4 md:grid-cols-3">
             {FEATURES.map((feature) => (
-              <Card key={feature.title} size="sm">
+              <Card key={feature.title} size="sm" className="animate-in fade-in slide-in-from-bottom-2">
                 <CardHeader>
                   <CardTitle>{feature.title}</CardTitle>
                 </CardHeader>
@@ -185,6 +196,55 @@ export default function Home() {
                     {integration}
                   </span>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      <section className="border-b">
+        <div className="container mx-auto flex max-w-6xl flex-col gap-8 px-4 py-14">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Focus areas</p>
+              <h2 className="mt-3 text-3xl font-semibold">Tune the experience by team priority.</h2>
+              <p className="text-sm text-muted-foreground">
+                Select a focus to personalize the dashboards your teams see first.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {FOCUS_AREAS.map((area) => (
+                <button
+                  key={area}
+                  className={buttonVariants({
+                    variant: focusArea === area ? "default" : "outline",
+                    size: "sm",
+                  })}
+                  onClick={() => dispatch(setFocusArea(area))}
+                  type="button"
+                >
+                  {area}
+                </button>
+              ))}
+            </div>
+          </div>
+          <Card className="animate-in fade-in slide-in-from-bottom-3">
+            <CardHeader>
+              <CardTitle>{focusArea} priority</CardTitle>
+              <CardDescription>{FOCUS_COPY[focusArea]}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">What it unlocks</p>
+                <p>Tailored dashboards, alerts, and AI answers for {focusArea.toLowerCase()}.</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Who benefits</p>
+                <p>Ops leads, team managers, and domain experts stay aligned.</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Next step</p>
+                <p>Assign owners and connect sources to activate the experience.</p>
               </div>
             </CardContent>
           </Card>

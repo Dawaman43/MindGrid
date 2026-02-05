@@ -2,6 +2,31 @@
 
 This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines Next.js, Elysia, TRPC, and more.
 
+## Overview
+
+MindGrid is an enterprise knowledge platform that centralizes, organizes, and makes company knowledge instantly accessible. It connects to common workplace tools, indexes information semantically, and powers AI-assisted Q&A so employees can find answers quickly. It also surfaces analytics about knowledge usage and gaps to help teams stay aligned and informed.
+
+### Why it matters
+
+Enterprise knowledge is often scattered across chat, docs, and intranets. MindGrid reduces time spent searching, improves onboarding, and gives leaders visibility into what information exists (and what is missing).
+
+### Core capabilities
+
+- **Data ingestion & integration** from sources like Google Workspace, Microsoft 365, Slack, Teams, Confluence, and SharePoint.
+- **Semantic search** with embeddings and natural-language queries.
+- **AI-powered Q&A** that summarizes answers or surfaces the most relevant documents.
+- **Auto-tagging & categorization** by topic, team, project, or document type.
+- **Role-based access control** aligned with SSO/LDAP permissions.
+- **Analytics & insights** for knowledge usage, gaps, and adoption.
+
+### Architecture at a glance
+
+1. **Ingestion layer**: Crawlers and APIs pull content from connected systems.
+2. **Storage layer**: Raw files in object storage, metadata in PostgreSQL, and embeddings in a vector database.
+3. **AI processing**: Text cleaning, embedding generation, and auto-tagging.
+4. **Application layer**: Web UI and APIs for search, Q&A, and document discovery.
+5. **Analytics**: Dashboards for usage metrics and knowledge gaps.
+
 ## Features
 
 - **TypeScript** - For type safety and improved developer experience

@@ -29,6 +29,12 @@ const TOP_QUERIES = [
   "SOC2 evidence checklist",
 ];
 
+type DashboardUser = {
+  name: string;
+  email: string;
+};
+
+export default function Dashboard({ user }: { user: DashboardUser }) {
 export default function Dashboard({ session }: { session: typeof authClient.$Infer.Session }) {
   const privateData = useQuery(trpc.privateData.queryOptions());
   const apiMessage = privateData.data?.message ?? "Loading secure data...";
@@ -42,6 +48,7 @@ export default function Dashboard({ session }: { session: typeof authClient.$Inf
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>{apiMessage}</p>
+            <p>Signed in as {user.email}</p>
             <p>Signed in as {session.user?.email}</p>
           </CardContent>
         </Card>

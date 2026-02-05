@@ -7,13 +7,18 @@ import UserMenu from "./user-menu";
 export default function Header() {
   const links = [
     { to: "/", label: "Home" },
+    { to: "/features", label: "Features" },
+    { to: "/pricing", label: "Pricing" },
+    { to: "/security", label: "Security" },
     { to: "/dashboard", label: "Dashboard" },
+    { to: "/integrations", label: "Integrations" },
+    { to: "/analytics", label: "Analytics" },
   ] as const;
 
   return (
     <div>
       <div className="flex flex-row items-center justify-between px-2 py-1">
-        <nav className="flex gap-4 text-lg">
+        <nav className="flex flex-wrap gap-4 text-lg">
           {links.map(({ to, label }) => {
             return (
               <Link key={to} href={to}>

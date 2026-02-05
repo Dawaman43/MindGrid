@@ -1,0 +1,3 @@
+{
+  "extends": "@MindGrid/config/tsconfig.base.json"
+}

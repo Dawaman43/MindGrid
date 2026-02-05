@@ -78,6 +78,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <Dashboard user={{ name: session.user.name ?? "Teammate", email: session.user.email ?? "" }} />
+              <Dashboard session={session} />
             </CardContent>
           </Card>
           <Card>

@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { authClient } from "@/lib/auth-client";
 import { trpc } from "@/utils/trpc";
 
 const ACTIVITY_FEED = [
@@ -34,6 +35,7 @@ type DashboardUser = {
 };
 
 export default function Dashboard({ user }: { user: DashboardUser }) {
+export default function Dashboard({ session }: { session: typeof authClient.$Infer.Session }) {
   const privateData = useQuery(trpc.privateData.queryOptions());
   const apiMessage = privateData.data?.message ?? "Loading secure data...";
 
@@ -47,6 +49,7 @@ export default function Dashboard({ user }: { user: DashboardUser }) {
           <CardContent className="space-y-2 text-sm text-muted-foreground">
             <p>{apiMessage}</p>
             <p>Signed in as {user.email}</p>
+            <p>Signed in as {session.user?.email}</p>
           </CardContent>
         </Card>
         <Card>

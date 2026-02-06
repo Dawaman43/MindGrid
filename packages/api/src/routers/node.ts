@@ -1,13 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { grid, member, node, project } from "@MindGrid/db/schema";
 
 import { protectedProcedure, router } from "../index";
-import { normalizePagination, paginationInput } from "./pagination";
-import { requireWorkspaceAdmin } from "./rbac";
 
 const nodeInput = z.object({
   title: z.string().optional(),
@@ -19,15 +17,12 @@ const nodeInput = z.object({
 export const nodeRouter = router({
   list: protectedProcedure
     .input(
-      z
-        .object({
-          gridId: z.string().min(1),
-        })
-        .merge(paginationInput),
+      z.object({
+        gridId: z.string().min(1),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { limit, offset } = normalizePagination(input);
       return ctx.db
         .select({
           id: node.id,
@@ -49,10 +44,7 @@ export const nodeRouter = router({
             eq(member.userId, userId),
             eq(member.isActive, true),
           ),
-        )
-        .orderBy(desc(node.createdAt))
-        .limit(limit)
-        .offset(offset);
+        );
     }),
   create: protectedProcedure
     .input(
@@ -63,8 +55,8 @@ export const nodeRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const [membership] = await ctx.db
-        .select({ gridId: grid.id, role: member.role })
+      const membership = await ctx.db
+        .select({ gridId: grid.id })
         .from(grid)
         .innerJoin(project, eq(project.id, grid.projectId))
         .innerJoin(member, eq(member.workspaceId, project.workspaceId))
@@ -72,13 +64,12 @@ export const nodeRouter = router({
           and(eq(grid.id, input.gridId), eq(member.userId, userId), eq(member.isActive, true)),
         )
         .limit(1);
-      if (!membership) {
+      if (membership.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to this grid.",
         });
       }
-      requireWorkspaceAdmin(membership.role);
       const nodeId = randomUUID();
       await ctx.db.insert(node).values({
         id: nodeId,
@@ -99,39 +90,27 @@ export const nodeRouter = router({
     }),
   update: protectedProcedure
     .input(
-      z
-        .object({
-          nodeId: z.string().min(1),
-          ...nodeInput.shape,
-        })
-        .refine(
-          (data) =>
-            data.title !== undefined ||
-            data.content !== undefined ||
-            data.position !== undefined ||
-            data.type !== undefined,
-          {
-            message: "Provide at least one field to update.",
-          },
-        ),
+      z.object({
+        nodeId: z.string().min(1),
+        ...nodeInput.shape,
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const [membership] = await ctx.db
-        .select({ nodeId: node.id, role: member.role })
+      const membership = await ctx.db
+        .select({ nodeId: node.id })
         .from(node)
         .innerJoin(grid, eq(grid.id, node.gridId))
         .innerJoin(project, eq(project.id, grid.projectId))
         .innerJoin(member, eq(member.workspaceId, project.workspaceId))
         .where(and(eq(node.id, input.nodeId), eq(member.userId, userId), eq(member.isActive, true)))
         .limit(1);
-      if (!membership) {
+      if (membership.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to this node.",
         });
       }
-      requireWorkspaceAdmin(membership.role);
       const [updated] = await ctx.db
         .update(node)
         .set({
@@ -166,21 +145,20 @@ export const nodeRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const [membership] = await ctx.db
-        .select({ nodeId: node.id, role: member.role })
+      const membership = await ctx.db
+        .select({ nodeId: node.id })
         .from(node)
         .innerJoin(grid, eq(grid.id, node.gridId))
         .innerJoin(project, eq(project.id, grid.projectId))
         .innerJoin(member, eq(member.workspaceId, project.workspaceId))
         .where(and(eq(node.id, input.nodeId), eq(member.userId, userId), eq(member.isActive, true)))
         .limit(1);
-      if (!membership) {
+      if (membership.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to this node.",
         });
       }
-      requireWorkspaceAdmin(membership.role);
       await ctx.db.delete(node).where(eq(node.id, input.nodeId));
       return { id: input.nodeId };
     }),

@@ -1,25 +1,21 @@
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { grid, member, node, nodeTag, project, tag } from "@MindGrid/db/schema";
 
 import { protectedProcedure, router } from "../index";
-import { normalizePagination, paginationInput } from "./pagination";
 
 export const tagRouter = router({
   list: protectedProcedure
     .input(
-      z
-        .object({
-          workspaceId: z.string().min(1),
-        })
-        .merge(paginationInput),
+      z.object({
+        workspaceId: z.string().min(1),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { limit, offset } = normalizePagination(input);
       return ctx.db
         .select({
           id: tag.id,
@@ -34,10 +30,7 @@ export const tagRouter = router({
             eq(member.userId, userId),
             eq(member.isActive, true),
           ),
-        )
-        .orderBy(desc(tag.createdAt))
-        .limit(limit)
-        .offset(offset);
+        );
     }),
   create: protectedProcedure
     .input(

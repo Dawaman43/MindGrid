@@ -1,12 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { grid, member, node, project } from "@MindGrid/db/schema";
 
 import { protectedProcedure, router } from "../index";
-import { normalizePagination, paginationInput } from "./pagination";
 
 const nodeInput = z.object({
   title: z.string().optional(),
@@ -18,15 +17,12 @@ const nodeInput = z.object({
 export const nodeRouter = router({
   list: protectedProcedure
     .input(
-      z
-        .object({
-          gridId: z.string().min(1),
-        })
-        .merge(paginationInput),
+      z.object({
+        gridId: z.string().min(1),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { limit, offset } = normalizePagination(input);
       return ctx.db
         .select({
           id: node.id,
@@ -48,10 +44,7 @@ export const nodeRouter = router({
             eq(member.userId, userId),
             eq(member.isActive, true),
           ),
-        )
-        .orderBy(desc(node.createdAt))
-        .limit(limit)
-        .offset(offset);
+        );
     }),
   create: protectedProcedure
     .input(

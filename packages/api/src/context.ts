@@ -1,6 +1,7 @@
 import type { Context as ElysiaContext } from "elysia";
 
 import { auth } from "@MindGrid/auth";
+import { db } from "@MindGrid/db";
 
 export type CreateContextOptions = {
   context: ElysiaContext;
@@ -11,6 +12,7 @@ export async function createContext({ context }: CreateContextOptions) {
     headers: context.request.headers,
   });
   return {
+    db,
     session,
   };
 }

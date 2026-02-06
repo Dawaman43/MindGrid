@@ -83,6 +83,11 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 
 For more details, see the guide on [Deploying to Cloudflare with Alchemy](https://www.better-t-stack.dev/docs/guides/cloudflare-alchemy).
 
+## API Proxy (Cloudflare Workers)
+
+To front the API with a Cloudflare Worker, deploy the worker in `apps/server` using Wrangler.
+Update `apps/server/wrangler.jsonc` with your origin and CORS settings before deploying.
+
 ## Git Hooks and Formatting
 
 - Format and lint fix: `bun run check`

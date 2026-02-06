@@ -1,0 +1,138 @@
+---
+title: Backend & API Design (Draft)
+description: Initial architecture, domain model, and API planning for MindGrid.
+---
+
+# Backend & API Design (Draft)
+
+This document captures the initial backend and API design for MindGrid. It is intended to align
+product, web, and mobile teams on the service boundaries, core data model, and the first API
+surface area. It will evolve as the product scope becomes more defined.
+
+## Goals
+
+- Provide a stable API surface for web and native clients.
+- Keep domain logic in a shared `packages/api` layer.
+- Favor typed RPC endpoints (tRPC) for client integrations.
+- Use a relational data model with clear ownership and access control.
+- Make observability, error handling, and migrations first-class from day one.
+
+## Current Stack (as implemented)
+
+- **Server runtime:** Elysia (Bun) in `apps/server`.
+- **API layer:** tRPC router in `packages/api`.
+- **Auth:** `@MindGrid/auth` with database-backed sessions.
+- **Database:** PostgreSQL via Drizzle ORM in `packages/db`.
+
+## Proposed Architecture
+
+```
+apps/server (Elysia HTTP)
+  ├─ /api/auth/*  → auth handler
+  └─ /trpc/*      → tRPC router (appRouter)
+
+packages/api
+  ├─ context.ts   → auth/session context
+  └─ routers/     → domain routers
+
+packages/db
+  ├─ schema/      → Drizzle tables + relations
+  └─ migrations/  → SQL migrations (future)
+```
+
+## Domain Model (Draft)
+
+The product definition is still emerging, so the model is intentionally minimal and extensible.
+Suggested core entities:
+
+- **Workspace**: A tenant boundary for users and data.
+- **Member**: User-to-workspace membership with role.
+- **Project**: A collection of mind-grid resources.
+- **Grid**: A mind-grid canvas or board.
+- **Node**: A single item in a grid (idea, task, note).
+- **Edge**: A relationship between nodes (link, dependency).
+- **Tag**: Reusable labels for nodes.
+
+**Access control:** Users access data through workspaces. Member roles (owner/admin/member) gate
+privileged operations.
+
+## API Surface (Draft)
+
+All endpoints are exposed via tRPC routers. Clients use typed procedures and session-based auth.
+
+### `auth` router
+
+- `getSession` (public): Return session info for the current user.
+- `signOut` (protected): Revoke the active session.
+
+### `workspace` router
+
+- `list` (protected): List workspaces for the current user.
+- `create` (protected): Create a new workspace.
+- `invite` (protected): Invite a user to a workspace.
+
+### `project` router
+
+- `list` (protected): List projects in a workspace.
+- `create` (protected): Create a project.
+- `update` (protected): Update project metadata.
+
+### `grid` router
+
+- `list` (protected): List grids in a project.
+- `create` (protected): Create a new grid.
+- `update` (protected): Update grid metadata.
+- `archive` (protected): Archive a grid.
+
+### `node` router
+
+- `list` (protected): List nodes in a grid.
+- `create` (protected): Create a node.
+- `update` (protected): Update node content/position.
+- `delete` (protected): Delete a node.
+
+### `edge` router
+
+- `list` (protected): List edges in a grid.
+- `create` (protected): Create an edge.
+- `delete` (protected): Delete an edge.
+
+### `tag` router
+
+- `list` (protected): List tags in a workspace.
+- `create` (protected): Create a tag.
+- `assign` (protected): Attach a tag to a node.
+- `remove` (protected): Remove a tag from a node.
+
+## API Conventions
+
+- **Error handling:** Use standardized tRPC errors with domain-specific codes.
+- **Validation:** Zod input/output schemas for all procedures.
+- **Pagination:** Cursor-based pagination for list endpoints.
+- **Filtering:** Support optional filters (workspaceId, projectId, gridId).
+
+## Database Outline (Draft)
+
+```
+workspace (id, name, created_at, updated_at)
+member (workspace_id, user_id, role)
+project (id, workspace_id, name, description, created_at, updated_at)
+grid (id, project_id, name, layout, created_at, updated_at, archived_at)
+node (id, grid_id, type, title, content, position, created_at, updated_at)
+edge (id, grid_id, source_node_id, target_node_id, type, created_at)
+tag (id, workspace_id, name, color)
+node_tag (node_id, tag_id)
+```
+
+## Observability & Operations
+
+- **Logging:** Structured JSON logs at server edge (request id, user id).
+- **Metrics:** Request latency, error rates, and DB query timing.
+- **Tracing:** Correlate requests across tRPC and DB calls.
+
+## Next Steps
+
+1. Confirm the core domain entities and required fields with product.
+2. Create initial Drizzle schema + migrations.
+3. Implement routers for the first MVP flows.
+4. Add integration tests for key endpoints.

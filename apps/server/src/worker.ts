@@ -22,7 +22,7 @@ export default {
     const origin = new URL(env.ORIGIN_URL);
     const url = new URL(request.url);
     const target = new URL(url.pathname + url.search, origin);
-    const response = await fetch(new Request(target, request));
+    const response = await fetch(new Request(target.toString(), request));
     const headers = new Headers(response.headers);
     const corsHeaders = defaultHeaders(env);
     Object.entries(corsHeaders).forEach(([key, value]) => {

@@ -1,0 +1,9 @@
+{
+  "name": "mindgrid-api-proxy",
+  "main": "src/worker.ts",
+  "compatibility_date": "2025-02-18",
+  "vars": {
+    "ORIGIN_URL": "http://localhost:3000",
+    "CORS_ORIGIN": "http://localhost:3001"
+  }
+}

@@ -1,17 +1,43 @@
 ---
-title: Components
-description: Components
+title: Component Patterns
+description: Content building blocks and layout rules for MindGrid docs.
 ---
 
-## Code Block
+This guide covers the shared components and content patterns used in the
+MindGrid documentation. Use these patterns to keep docs consistent and easy to
+scan.
 
-```js
-console.log("Hello World");
+## Structure guidelines
+
+- Start each page with a short summary and a clear goal.
+- Use headings to break long sections into 3–5 line chunks.
+- Include decision points and ownership for technical docs.
+
+## Code blocks
+
+Use code blocks to explain integrations, API usage, and system behavior.
+
+```ts
+import { api } from "@mindgrid/api/client";
+
+const session = await api.auth.getSession();
+if (!session.user) {
+  throw new Error("Unauthenticated");
+}
 ```
 
-## Cards
+## Callout cards
+
+Use cards to link to related topics or highlight next steps.
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Product overview" href="/docs/product-overview" />
+  <Card title="Release readiness" href="/docs/release-readiness" />
 </Cards>
+
+## Status tags
+
+When a section is not complete, include a status line at the top of the
+section to avoid ambiguity. Example:
+
+> **Status:** In review (owner: Platform team)

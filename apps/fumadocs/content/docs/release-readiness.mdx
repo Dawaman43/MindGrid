@@ -1,0 +1,47 @@
+---
+title: Release Readiness
+description: Checklist for launching MindGrid features with confidence.
+---
+
+Use this checklist before shipping changes to production. Capture status updates
+as you progress, and flag blockers early.
+
+## Release checklist
+
+### Product
+
+- [ ] Final scope reviewed and signed off.
+- [ ] Success metrics and launch criteria agreed.
+- [ ] Stakeholder communications prepared.
+
+### Design
+
+- [ ] Final UX review complete (web + mobile).
+- [ ] Accessibility audit completed.
+- [ ] UX edge cases documented.
+
+### Engineering
+
+- [ ] API changes released and versioned.
+- [ ] Database migrations reviewed and tested.
+- [ ] Telemetry dashboards updated.
+- [ ] Feature flags configured.
+
+### QA
+
+- [ ] Regression suite passed.
+- [ ] Critical paths tested on web and mobile.
+- [ ] Rollback plan documented.
+
+## Ownership
+
+- **Release driver:** Owns coordination and final go/no-go.
+- **Platform:** Ensures infrastructure and auth stability.
+- **API:** Confirms tRPC changes and schema compatibility.
+- **Web/Mobile:** Validate user-facing flows.
+
+## Post-release monitoring
+
+- Monitor error rates and latency dashboards for 48 hours.
+- Capture user feedback and triage issues daily.
+- Schedule a retro within one week of launch.

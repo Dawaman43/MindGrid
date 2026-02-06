@@ -1,13 +1,13 @@
 ---
-title: Backend & API Design (Draft)
-description: Initial architecture, domain model, and API planning for MindGrid.
+title: Backend & API Design
+description: Architecture, domain model, and API planning for MindGrid.
 ---
 
-# Backend & API Design (Draft)
+# Backend & API Design
 
-This document captures the initial backend and API design for MindGrid. It is intended to align
-product, web, and mobile teams on the service boundaries, core data model, and the first API
-surface area. It will evolve as the product scope becomes more defined.
+This document captures the backend and API design for MindGrid. It aligns product, web, and
+mobile teams on service boundaries, the core data model, and the API surface area. Revisions
+to this plan should be recorded in the roadmap section at the end of the document.
 
 ## Goals
 
@@ -17,7 +17,7 @@ surface area. It will evolve as the product scope becomes more defined.
 - Use a relational data model with clear ownership and access control.
 - Make observability, error handling, and migrations first-class from day one.
 
-## Current Stack (as implemented)
+## Current stack (as implemented)
 
 - **Server runtime:** Elysia (Bun) in `apps/server`.
 - **API layer:** tRPC router in `packages/api`.
@@ -40,7 +40,7 @@ packages/db
   └─ migrations/  → SQL migrations (future)
 ```
 
-## Domain Model (Draft)
+## Domain model
 
 The product definition is still emerging, so the model is intentionally minimal and extensible.
 Suggested core entities:
@@ -56,7 +56,7 @@ Suggested core entities:
 **Access control:** Users access data through workspaces. Member roles (owner/admin/member) gate
 privileged operations.
 
-## API Surface (Draft)
+## API surface
 
 All endpoints are exposed via tRPC routers. Clients use typed procedures and session-based auth.
 
@@ -111,7 +111,7 @@ All endpoints are exposed via tRPC routers. Clients use typed procedures and ses
 - **Pagination:** Cursor-based pagination for list endpoints.
 - **Filtering:** Support optional filters (workspaceId, projectId, gridId).
 
-## Database Outline (Draft)
+## Database outline
 
 ```
 workspace (id, name, created_at, updated_at)
@@ -136,3 +136,10 @@ node_tag (node_id, tag_id)
 2. Create initial Drizzle schema + migrations.
 3. Implement routers for the first MVP flows.
 4. Add integration tests for key endpoints.
+
+## Roadmap & ownership
+
+- **Platform:** finalize auth/session flows and schema migrations.
+- **API:** deliver MVP routers (workspace, project, grid).
+- **Web:** implement core grid workflows and data loading UX.
+- **Mobile:** validate offline caching strategy.

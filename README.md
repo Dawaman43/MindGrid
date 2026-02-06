@@ -83,10 +83,31 @@ The API is running at [http://localhost:3000](http://localhost:3000).
 
 For more details, see the guide on [Deploying to Cloudflare with Alchemy](https://www.better-t-stack.dev/docs/guides/cloudflare-alchemy).
 
-## API Proxy (Cloudflare Workers)
+## API (Cloudflare Workers)
 
-To front the API with a Cloudflare Worker, deploy the worker in `apps/server` using Wrangler.
-Update `apps/server/wrangler.jsonc` with your origin and CORS settings before deploying.
+Deploy the API as a Cloudflare Worker from `apps/server`.
+Update `apps/server/wrangler.jsonc` with your Hyperdrive ID and CORS/BETTER_AUTH_URL before deploying.
+
+```bash
+cd apps/server
+bun run cf:dev
+# bun run cf:deploy
+# bun run cf:delete
+```
+
+Create a local Wrangler vars file (not committed):
+
+```bash
+cp apps/server/.dev.vars.example apps/server/.dev.vars
+```
+
+Set production secrets (do this once per environment):
+
+```bash
+cd apps/server
+bunx wrangler secret put BETTER_AUTH_SECRET
+bunx wrangler secret put DATABASE_URL
+```
 
 ## Git Hooks and Formatting
 

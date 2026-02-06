@@ -6,6 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { member, project } from "@MindGrid/db/schema";
 
 import { protectedProcedure, router } from "../index";
+import { requireWorkspaceAdmin } from "./rbac";
 
 export const projectRouter = router({
   list: protectedProcedure
@@ -74,5 +75,96 @@ export const projectRouter = router({
         name: input.name,
         description: input.description ?? null,
       };
+    }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().min(1),
+        name: z.string().min(1).optional(),
+        description: z.string().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const [membership] = await ctx.db
+        .select({ role: member.role })
+        .from(project)
+        .innerJoin(member, eq(member.workspaceId, project.workspaceId))
+        .where(
+          and(
+            eq(project.id, input.projectId),
+            eq(member.userId, userId),
+            eq(member.isActive, true),
+          ),
+        )
+        .limit(1);
+      if (!membership) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this project.",
+        });
+      }
+      requireWorkspaceAdmin(membership.role);
+      const updates: { name?: string; description?: string | null } = {};
+      if (input.name !== undefined) {
+        updates.name = input.name;
+      }
+      if (input.description !== undefined) {
+        updates.description = input.description;
+      }
+      if (Object.keys(updates).length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Provide at least one field to update.",
+        });
+      }
+      const [updated] = await ctx.db
+        .update(project)
+        .set(updates)
+        .where(eq(project.id, input.projectId))
+        .returning({
+          id: project.id,
+          workspaceId: project.workspaceId,
+          name: project.name,
+          description: project.description,
+          updatedAt: project.updatedAt,
+        });
+      if (!updated) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found.",
+        });
+      }
+      return updated;
+    }),
+  delete: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const [membership] = await ctx.db
+        .select({ role: member.role })
+        .from(project)
+        .innerJoin(member, eq(member.workspaceId, project.workspaceId))
+        .where(
+          and(
+            eq(project.id, input.projectId),
+            eq(member.userId, userId),
+            eq(member.isActive, true),
+          ),
+        )
+        .limit(1);
+      if (!membership) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this project.",
+        });
+      }
+      requireWorkspaceAdmin(membership.role);
+      await ctx.db.delete(project).where(eq(project.id, input.projectId));
+      return { id: input.projectId };
     }),
 });

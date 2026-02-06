@@ -1,0 +1,5 @@
+CORS_ORIGIN=http://localhost:3001
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=replace-with-long-secret
+DATABASE_URL=postgres://user:password@localhost:5432/mindgrid
+NODE_ENV=development

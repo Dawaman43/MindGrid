@@ -73,6 +73,82 @@ export const tagRouter = router({
         color: input.color ?? null,
       };
     }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        tagId: z.string().min(1),
+        name: z.string().min(1).optional(),
+        color: z.string().optional().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const [membership] = await ctx.db
+        .select({ workspaceId: tag.workspaceId })
+        .from(tag)
+        .innerJoin(member, eq(member.workspaceId, tag.workspaceId))
+        .where(and(eq(tag.id, input.tagId), eq(member.userId, userId), eq(member.isActive, true)))
+        .limit(1);
+      if (!membership) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this tag.",
+        });
+      }
+      const updates: { name?: string; color?: string | null } = {};
+      if (input.name !== undefined) {
+        updates.name = input.name;
+      }
+      if (input.color !== undefined) {
+        updates.color = input.color;
+      }
+      if (Object.keys(updates).length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Provide at least one field to update.",
+        });
+      }
+      const [updated] = await ctx.db
+        .update(tag)
+        .set(updates)
+        .where(eq(tag.id, input.tagId))
+        .returning({
+          id: tag.id,
+          workspaceId: tag.workspaceId,
+          name: tag.name,
+          color: tag.color,
+        });
+      if (!updated) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Tag not found.",
+        });
+      }
+      return updated;
+    }),
+  delete: protectedProcedure
+    .input(
+      z.object({
+        tagId: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const [membership] = await ctx.db
+        .select({ workspaceId: tag.workspaceId })
+        .from(tag)
+        .innerJoin(member, eq(member.workspaceId, tag.workspaceId))
+        .where(and(eq(tag.id, input.tagId), eq(member.userId, userId), eq(member.isActive, true)))
+        .limit(1);
+      if (!membership) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "You do not have access to this tag.",
+        });
+      }
+      await ctx.db.delete(tag).where(eq(tag.id, input.tagId));
+      return { id: input.tagId };
+    }),
   assign: protectedProcedure
     .input(
       z.object({

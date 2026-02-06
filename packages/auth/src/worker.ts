@@ -1,18 +1,12 @@
-import { expo } from "@better-auth/expo";
-import { db } from "@MindGrid/db";
 import * as schema from "@MindGrid/db/schema/auth";
-import { env } from "@MindGrid/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { expo } from "@better-auth/expo";
 
-export type AuthEnv = {
-  CORS_ORIGIN: string;
-  BETTER_AUTH_SECRET: string;
-  BETTER_AUTH_URL: string;
-  NODE_ENV?: "development" | "production" | "test";
-};
+import type { AuthEnv } from "./index";
+import type { db as dbType } from "@MindGrid/db";
 
-export const createAuth = (options: { db: typeof db; env: AuthEnv }) => {
+export const createAuth = (options: { db: typeof dbType; env: AuthEnv }) => {
   const nodeEnv = options.env.NODE_ENV ?? "development";
   return betterAuth({
     secret: options.env.BETTER_AUTH_SECRET,
@@ -41,13 +35,3 @@ export const createAuth = (options: { db: typeof db; env: AuthEnv }) => {
     plugins: [expo()],
   });
 };
-
-export const auth = createAuth({
-  db,
-  env: {
-    CORS_ORIGIN: env.CORS_ORIGIN,
-    BETTER_AUTH_SECRET: env.BETTER_AUTH_SECRET,
-    BETTER_AUTH_URL: env.BETTER_AUTH_URL,
-    NODE_ENV: env.NODE_ENV,
-  },
-});

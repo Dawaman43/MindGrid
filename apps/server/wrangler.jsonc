@@ -1,9 +1,17 @@
 {
-  "name": "mindgrid-api-proxy",
-  "main": "src/worker.ts",
-  "compatibility_date": "2025-02-18",
+  "name": "mindgrid-api",
+  "main": "src/worker-api.ts",
+  "compatibility_date": "2026-02-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "96a12343e4f04cd384a011398f22ec68"
+    }
+  ],
   "vars": {
-    "ORIGIN_URL": "http://localhost:3000",
-    "CORS_ORIGIN": "http://localhost:3001"
+    "CORS_ORIGIN": "https://mindgrid-api-proxy.dawit-dev-gg.workers.dev",
+    "BETTER_AUTH_URL": "https://mindgrid-api-proxy.dawit-dev-gg.workers.dev",
+    "NODE_ENV": "production"
   }
 }

@@ -6,6 +6,10 @@
     "build": "tsdown",
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+    "cf:dev": "bunx wrangler dev",
+    "cf:deploy": "bunx wrangler deploy",
+    "cf:delete": "bunx wrangler delete",
+    "cf:tail": "bunx wrangler tail",
     "dev": "bun run --hot src/index.ts",
     "start": "bun run dist/index.mjs"
   },
@@ -21,6 +25,7 @@
     "better-auth": "catalog:",
     "dotenv": "catalog:",
     "elysia": "catalog:",
+    "@sinclair/typebox": "^0.34.10",
     "zod": "catalog:"
   },
   "devDependencies": {

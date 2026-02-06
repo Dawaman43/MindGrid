@@ -1,17 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { desc, eq, and } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 import { member, workspace } from "@MindGrid/db/schema";
 
 import { protectedProcedure, router } from "../index";
-import { normalizePagination, paginationInput } from "./pagination";
 
 export const workspaceRouter = router({
-  list: protectedProcedure.input(paginationInput.optional()).query(async ({ ctx, input }) => {
+  list: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
-    const { limit, offset } = normalizePagination(input);
     const rows = await ctx.db
       .select({
         id: workspace.id,
@@ -20,10 +18,7 @@ export const workspaceRouter = router({
       })
       .from(workspace)
       .innerJoin(member, eq(member.workspaceId, workspace.id))
-      .where(and(eq(member.userId, userId), eq(member.isActive, true)))
-      .orderBy(desc(workspace.createdAt))
-      .limit(limit)
-      .offset(offset);
+      .where(and(eq(member.userId, userId), eq(member.isActive, true)));
     return rows;
   }),
   create: protectedProcedure

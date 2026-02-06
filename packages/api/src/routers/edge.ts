@@ -1,26 +1,21 @@
 import { TRPCError } from "@trpc/server";
 import { randomUUID } from "crypto";
 import { z } from "zod";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 import { edge, grid, member, node, project } from "@MindGrid/db/schema";
 
 import { protectedProcedure, router } from "../index";
-import { normalizePagination, paginationInput } from "./pagination";
-import { requireWorkspaceAdmin } from "./rbac";
 
 export const edgeRouter = router({
   list: protectedProcedure
     .input(
-      z
-        .object({
-          gridId: z.string().min(1),
-        })
-        .merge(paginationInput),
+      z.object({
+        gridId: z.string().min(1),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { limit, offset } = normalizePagination(input);
       return ctx.db
         .select({
           id: edge.id,
@@ -40,28 +35,21 @@ export const edgeRouter = router({
             eq(member.userId, userId),
             eq(member.isActive, true),
           ),
-        )
-        .orderBy(desc(edge.createdAt))
-        .limit(limit)
-        .offset(offset);
+        );
     }),
   create: protectedProcedure
     .input(
-      z
-        .object({
-          gridId: z.string().min(1),
-          sourceNodeId: z.string().min(1),
-          targetNodeId: z.string().min(1),
-          type: z.string().optional(),
-        })
-        .refine((data) => data.sourceNodeId !== data.targetNodeId, {
-          message: "Source and target nodes must be different.",
-        }),
+      z.object({
+        gridId: z.string().min(1),
+        sourceNodeId: z.string().min(1),
+        targetNodeId: z.string().min(1),
+        type: z.string().optional(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const [membership] = await ctx.db
-        .select({ gridId: grid.id, role: member.role })
+      const membership = await ctx.db
+        .select({ gridId: grid.id })
         .from(grid)
         .innerJoin(project, eq(project.id, grid.projectId))
         .innerJoin(member, eq(member.workspaceId, project.workspaceId))
@@ -69,13 +57,12 @@ export const edgeRouter = router({
           and(eq(grid.id, input.gridId), eq(member.userId, userId), eq(member.isActive, true)),
         )
         .limit(1);
-      if (!membership) {
+      if (membership.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to this grid.",
         });
       }
-      requireWorkspaceAdmin(membership.role);
       const nodes = await ctx.db
         .select({ id: node.id })
         .from(node)
@@ -115,8 +102,8 @@ export const edgeRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const [membership] = await ctx.db
-        .select({ edgeId: edge.id, role: member.role })
+      const membership = await ctx.db
+        .select({ edgeId: edge.id })
         .from(edge)
         .innerJoin(grid, eq(grid.id, edge.gridId))
         .innerJoin(project, eq(project.id, grid.projectId))
@@ -125,13 +112,12 @@ export const edgeRouter = router({
           and(eq(edge.id, input.edgeId), eq(member.userId, userId), eq(member.isActive, true)),
         )
         .limit(1);
-      if (!membership) {
+      if (membership.length === 0) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "You do not have access to this edge.",
         });
       }
-      requireWorkspaceAdmin(membership.role);
       await ctx.db.delete(edge).where(eq(edge.id, input.edgeId));
       return { id: input.edgeId };
     }),
